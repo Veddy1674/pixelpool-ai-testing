@@ -44,11 +44,8 @@ static class Utils
         return false;
     } // e.g: args.TryGetValueAfter("--threads", out string? threads);
 
-    public static bool CopyTo(this SaveState source, SaveState target)
-        => SaveState.CopyTo(source, target);
-
-    public static bool CopyTo(this SaveStateStruct source, SaveStateStruct target)
-        => SaveStateStruct.CopyTo(source, target);
+    public static bool CopyTo(this ISaveState source, ISaveState target)
+        => ISaveState.CopyTo(source, target);
 
     #region Embedded Resources Fetching
 
