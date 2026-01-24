@@ -1,17 +1,10 @@
 ﻿using Raylib_cs;
 using System.Numerics;
-using static EnvRenderer;
 
-class Sprite
+class Sprite(Texture2D texture, Color? color = null)
 {
-    public Texture2D Texture { get; set; }
-    public Color Color { get; set; }
-
-    public Sprite(Texture2D texture, Color? color = null)
-    {
-        Texture = texture;
-        Color = color ?? Color.White;
-    }
+    public Texture2D Texture { get; set; } = texture;
+    public Color Color { get; set; } = color ?? Color.White;
 
     public void DrawCentered(Vector2 Position)
         => Raylib.DrawTexture(Texture,
