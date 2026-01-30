@@ -47,9 +47,9 @@ static class ProgramCLI
                     HandleAlgo(args);
                     break;
 
-#if false // debugging purpose, an empty case which i can easily toggle on and off, always empty because i remove the code after the test
+#if true // debugging purpose, an empty case which i can easily toggle on and off, always empty because i remove the code after the test
                 case "test":
-
+                    Playback(EnvMode.Optimized, [new(1, 0)]);
                     break;
 #endif
 
@@ -110,15 +110,14 @@ static class ProgramCLI
 
     static readonly Lock logLock = new(); // avoid race conditions
     static Vector2[] PlaybackDirections = []; // used in EnvUtils.Playback(here)
-    static string PlayBackMode = "normal";
+    static EnvMode PlayBackMode = EnvMode.Normal;
 
     static void HandleBenchmark(string[] args)
     {
         int threads = 1;
         int steps = 10_000;
 
-        string mode = args.GetOrDefault(1, "normal");
-        if (mode is not "optimized") mode = "normal";
+        var mode = GetEnvMode(args);
 
         if (args.TryGetValueAfter("--steps", out var str_steps) && int.TryParse(str_steps, out steps))
             steps = Math.Max(steps, 1);
@@ -132,7 +131,7 @@ static class ProgramCLI
         BenchmarkNormal(mode, threads, steps);
     }
 
-    private static void BenchmarkNormal(string mode, int threads, int steps)
+    private static void BenchmarkNormal(EnvMode mode, int threads, int steps)
     {
         if (threads == 1)
         {
@@ -191,8 +190,7 @@ static class ProgramCLI
 
     static void HandleAlgo(string[] args)
     {
-        string mode = args.GetOrDefault(2, "normal");
-        if (mode is not "optimized") mode = "normal";
+        var mode = GetEnvMode(args);
 
         // 1. Attempt random directions, update the "best direction" and create a savestate every time a better one is found
         // Based on the priority: 1. victory found (instantly return), 2. most balls fell and 2. fewest ticks
@@ -230,4 +228,13 @@ static class ProgramCLI
     }
 
     #endregion
+    
+    // returns the chosen env mode from args (check flags such as --optimized)
+    private static EnvMode GetEnvMode(string[] args)
+        => args.Contains("--optimized") ? EnvMode.Optimized : EnvMode.Normal;
+}
+
+enum EnvMode
+{
+    Normal = 0, Optimized = 1
 }

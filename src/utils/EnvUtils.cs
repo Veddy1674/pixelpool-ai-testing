@@ -87,23 +87,11 @@ static class EnvUtils
 
     #region save/load binary
 
-    private static string ByteToMode(byte val) => val switch
-    {
-        1 => "optimized",
-        _ => "normal" // 0
-    };
-
-    private static byte ModeToByte(string mode) => mode switch
-    {
-        "optimized" => (byte)1,
-        _ => (byte)0 // "normal"
-    };
-
-    public static void SaveAsBinary(string name, string mode, Vector2[] vectors)
+    public static void SaveAsBinary(string name, EnvMode mode, Vector2[] vectors)
     {
         using var writer = new BinaryWriter(File.Open(name/* + ".bin"*/, FileMode.Create));
 
-        writer.Write(ModeToByte(mode));
+        writer.Write((byte)mode);
         foreach (var v in vectors)
         {
             writer.Write(v.X); // float (4 byte)
@@ -112,7 +100,7 @@ static class EnvUtils
     }
 
     // SaveAsBinary_Incremental("test.bin", vecs) -> if test.bin exists, test1.bin is created, and if that one also already exists, test2.bin and so on
-    public static void SaveAsBinary_Incremental(string fileName, string mode, Vector2[] vectors)
+    public static void SaveAsBinary_Incremental(string fileName, EnvMode mode, Vector2[] vectors)
     {
         string directory = Path.GetDirectoryName(fileName) ?? Directory.GetCurrentDirectory();
         string baseName = Path.GetFileNameWithoutExtension(fileName);
@@ -133,7 +121,7 @@ static class EnvUtils
         SaveAsBinary(fullPath, mode, vectors);
     }
 
-    public static (string mode, Vector2[] vectors)? ReadBinary(string name)
+    public static (EnvMode mode, Vector2[] vectors)? ReadBinary(string name)
     {
         try
         {
@@ -141,7 +129,7 @@ static class EnvUtils
             var vectors = new List<Vector2>();
 
             byte b = reader.ReadByte();
-            string mode = ByteToMode(b);
+            var mode = (EnvMode)b;
 
             while (reader.BaseStream.Position < reader.BaseStream.Length)
             {
@@ -155,9 +143,9 @@ static class EnvUtils
         catch { return null; }
     }
 
-    public static IPoolEnv NewPoolEnv(string mode) => mode switch
+    public static IPoolEnv NewPoolEnv(EnvMode mode) => mode switch
     {
-        "optimized" => new PoolEnvMini(),
+        EnvMode.Optimized => new PoolEnvMini(),
         _ => new PoolEnv(), // "normal"
     };
 
@@ -173,7 +161,7 @@ static class EnvUtils
 
     #endregion
 
-    public static void Playback(string mode, Vector2[] playbackDirections)
+    public static void Playback(EnvMode mode, Vector2[] playbackDirections)
     {
         if (playbackDirections is null || playbackDirections.Length == 0) return;
         IPoolEnv env = NewPoolEnv(mode);
