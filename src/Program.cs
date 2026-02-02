@@ -19,15 +19,18 @@ class Program
 
         if (args.Contains("--headless"))
         {
-            if (!ProgramCLI.Init())
-                return;
+            bool noargs = ProgramCLI.Init(); // returns wheter to run the program normally
+
+            PythonUtils.ShutdownPython(); // shut if was running
+
+            if (!noargs) return;
         }
         // TODO hide command prompt?
 
         // logic to run one game instance, rendered, not meant for AI training, more like viewing results and debugging
-        PoolEnvMini env = new();
+        var env = new PoolEnv();
 
-        Ending lastGameState = Ending.Running;
+        Ending lastGameState = Running;
         bool isPaused = false;
         ManualResetEventSlim pauseEvent = new(true);
 

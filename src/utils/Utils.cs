@@ -10,7 +10,7 @@ static class Utils
         => value >= 0 ? value : -value;
 
     public static Vector2 Normalized(this Vector2 vector)
-        => vector / vector.Length();
+        => vector / vector.Length(); // literally the same as Vector2.Normalize
 
     public static Rectangle RecFromLTRB(float left, float top, float right, float bottom)
         => new(left, top, right - left, bottom - top);

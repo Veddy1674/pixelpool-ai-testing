@@ -1,6 +1,9 @@
-﻿using static EnvUtils;
+﻿using System.Numerics;
+using static EnvUtils;
 
-interface IPhysicsBody { } // empty to avoid complexity (attempted)
+interface IPhysicsBody {
+    //public Vector2 Position { get; set; }
+}
 
 interface ISaveState {
     public ISaveState Save();

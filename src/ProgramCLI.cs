@@ -2,6 +2,7 @@
 using System.Numerics;
 using static ColorLog;
 using static EnvUtils;
+using static System.Net.Mime.MediaTypeNames;
 
 static class ProgramCLI
 {
@@ -47,9 +48,30 @@ static class ProgramCLI
                     HandleAlgo(args);
                     break;
 
-#if true // debugging purpose, an empty case which i can easily toggle on and off, always empty because i remove the code after the test
+#if true // debugging purposes
                 case "test":
-                    Playback(EnvMode.Optimized, [new(1, 0)]);
+
+                    PythonUtils.SetupPython();
+
+                    const string script = "test.py";
+
+                    Log($"&aRunning &s'{script}'&a:\n");
+                    
+                    try
+                    {
+                        // wrapping
+                        PythonUtils.RegisterEnvWrapper(new EnvWrapper());
+
+                        // running
+                        PythonUtils.RunFile($"python/{script}");
+
+                        Log("\n&qScript executed successfully.");
+                    }
+                    catch (Exception e)
+                    {
+                        Log("&cSomething went wrong: \n" + e.Message + "\n" + e.StackTrace);
+                    }
+
                     break;
 #endif
 
@@ -228,7 +250,7 @@ static class ProgramCLI
     }
 
     #endregion
-    
+
     // returns the chosen env mode from args (check flags such as --optimized)
     private static EnvMode GetEnvMode(string[] args)
         => args.Contains("--optimized") ? EnvMode.Optimized : EnvMode.Normal;

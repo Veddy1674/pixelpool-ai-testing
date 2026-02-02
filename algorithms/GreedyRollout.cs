@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
-using static EnvUtils;
 using static ColorLog;
+using static EnvUtils;
 using static IPoolEnv;
 
 static partial class Algorithm
@@ -101,7 +101,7 @@ static partial class Algorithm
 
     // sorta of hill-climbing to fine-tune a direction (see if smaller increments yield better results)
     private static Vector2[] DeltasOf(float increment)
-        => [ new(increment, 0), new(0, increment), new(-increment, 0), new(0, -increment) ];
+        => [new(increment, 0), new(0, increment), new(-increment, 0), new(0, -increment)];
 
     public static Vector2 LocalSearch(in IPoolEnv env, in Vector2 direction, float increment = 0.01f, int times = 10)
     {

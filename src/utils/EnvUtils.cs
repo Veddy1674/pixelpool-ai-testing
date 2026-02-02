@@ -143,6 +143,10 @@ static class EnvUtils
         catch { return null; }
     }
 
+    #endregion
+
+    #region dynamic env utils
+
     public static IPoolEnv NewPoolEnv(EnvMode mode) => mode switch
     {
         EnvMode.Optimized => new PoolEnvMini(),
@@ -159,12 +163,26 @@ static class EnvUtils
             throw new Exception($"Invalid Environment of type {env.GetType()}");
     }
 
+    // avoids ((IPoolEnv)env).SetAction(...)
+    public static void SetAction(this IPoolEnv env, float angle, float strength = 1500f)
+    {
+        env.SetAction(angle, strength);
+    }
+
     #endregion
 
     public static void Playback(EnvMode mode, Vector2[] playbackDirections)
+        => Playback(NewPoolEnv(mode), playbackDirections);
+
+    public static void Playback(EnvMode mode, Vector2 playbackDirection)
+        => Playback(mode, [playbackDirection]);
+
+    public static void Playback(in IPoolEnv env, Vector2 playbackDirection)
+        => Playback(env, [playbackDirection]);
+
+    public static void Playback(in IPoolEnv env, Vector2[] playbackDirections)
     {
         if (playbackDirections is null || playbackDirections.Length == 0) return;
-        IPoolEnv env = NewPoolEnv(mode);
 
         // load whole video
         int videoLengthFrames;

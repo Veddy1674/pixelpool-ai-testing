@@ -45,9 +45,17 @@ interface IPoolEnv
             if (dir.LengthSquared() < 0.001f)
                 return Vector2.UnitX; // right
 
-            return Vector2.Normalize(dir);
+            return dir.Normalized();
         }
     }
+
+    // x from IPoolEnv.poolTableCollision.X + safeMargin TO IPoolEnv.poolTableCollision.X + IPoolEnv.poolTableCollision.Width - safeMargin
+    // y from IPoolEnv.poolTableCollision.Y + safeMargin TO IPoolEnv.poolTableCollision.Y + IPoolEnv.poolTableCollision.Height - safeMargin
+    const float safeMargin = 28f; // 28 seems to be the minimum, 32 is also fine
+    public static Vector2 RandomSafePosition => new(
+        poolTableCollision.X + safeMargin + Random.Shared.NextSingle() * (poolTableCollision.Width - (safeMargin * 2f)),
+        poolTableCollision.Y + safeMargin + Random.Shared.NextSingle() * (poolTableCollision.Height - (safeMargin * 2f))
+    );
 
     #endregion
 
@@ -63,9 +71,19 @@ interface IPoolEnv
     public Vector2[] GetBallsPosition();
     public void SetBallVelocity(int index, Vector2 velocity);
 
-    public float[] GetState();
-    public void SetAction(float angle, float strength = 1500f);
-    public float GetReward(int ballsFell, Ending ending);
+    /// <summary>
+    /// 0 ->        (1, 0)
+    /// 0.5 ->      (0, 1)
+    /// 1 = -1 ->   (-1, 0)
+    /// -0.5 ->     (0, -1)
+    /// </summary>
+    public void SetAction(float angle, float strength = 1500f) // angle -1 to 1
+    {
+        // rescale angle from (-1, 1) to (-pi, pi)
+        angle *= (float)Math.PI;
+
+        SetBallVelocity(0, new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * strength);
+    }
 }
 
 internal enum Ending

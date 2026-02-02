@@ -1,4 +1,4 @@
-﻿public static class ColorLog
+﻿static class ColorLog
 {
     private static readonly Dictionary<char, ConsoleColor> logColorMap = new()
     {

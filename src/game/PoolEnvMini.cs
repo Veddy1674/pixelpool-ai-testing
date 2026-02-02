@@ -3,15 +3,18 @@ using static EnvUtils;
 using static IPoolEnv;
 
 // optimized PoolEnv variant, which uses PhysicsBodyStruct and other optimization techniques, although more hardcoded
-class PoolEnvMini : IPoolEnv
+struct PoolEnvMini : IPoolEnv
 {
-    public PhysicsBodyStruct[] BallsBody { get; } = new PhysicsBodyStruct[16];
+    public PhysicsBodyStruct[] BallsBody;
 
     public bool BallsStill { get; private set; } = true; // needs to be manually set to false when balls are moved (velocities applied)
 
     // init
-    public PoolEnvMini(PhysicsBodyStruct[]? presetBallsBody = null)
+    public PoolEnvMini(PhysicsBodyStruct[]? presetBallsBody)
     {
+        BallsBody = new PhysicsBodyStruct[16];
+        ballPositionsCache = new Vector2[ballPositions.Length];
+
         if (presetBallsBody == null)
             // create bodies
             for (int i = 0; i < BallsBody.Length; i++)
@@ -22,10 +25,12 @@ class PoolEnvMini : IPoolEnv
         //Reset(); // ???
     }
 
+    public PoolEnvMini() : this(null) { }
+
     #region Getters & Setters
 
-    private readonly Vector2[] ballPositionsCache = new Vector2[ballPositions.Length];
-    public Vector2[] GetBallsPosition()
+    private readonly Vector2[] ballPositionsCache;
+    public readonly Vector2[] GetBallsPosition()
     {
         // optimized rather than: [.. BallsBody.Select(b => b.Position)];
 
@@ -45,7 +50,7 @@ class PoolEnvMini : IPoolEnv
 
     #region Game Logic
 
-    public void TickAll(out int ballsFell, out Ending ending)
+    public readonly void TickAll(out int ballsFell, out Ending ending)
     {
         ballsFell = 0;
         ending = Ending.Running;
@@ -100,7 +105,7 @@ class PoolEnvMini : IPoolEnv
         }
     }
 
-    public bool BallsAreStill()
+    public readonly bool BallsAreStill()
     {
         for (int i = 0; i < 16; i++)
             if (BallsBody[i].IsMoving)
@@ -132,7 +137,7 @@ class PoolEnvMini : IPoolEnv
         BallsStill = true;
     }
 
-    public void Reset(int seed = -1)
+    public readonly void Reset(int seed = -1)
     {
         var random = seed == -1 ? new Random(4477) : new Random(seed);
         // randomizes ball positions except cue and 8 ball (0 and 1)
@@ -161,7 +166,7 @@ class PoolEnvMini : IPoolEnv
         }
     }
 
-    public bool CheckVictory()
+    public readonly bool CheckVictory()
     {
         for (int i = 1; i < 16; i++)
             if (BallsBody[i].IsActive)
@@ -188,47 +193,6 @@ class PoolEnvMini : IPoolEnv
             return ending;
         }
         return null;
-    }
-
-    #endregion
-
-    #region GetState(), SetAction(), GetReward()
-
-    public float[] GetState()
-    {
-        // pos xy of cue ball, xy dist to all balls
-        // it is supposed to automatically understand collisions and holes
-        float[] state = new float[2 + 15 * 2]; // 32
-
-        state[0] = BallsBody[0].Position.X;
-        state[1] = BallsBody[0].Position.Y;
-
-        for (int i = 1; i < 15; i++)
-        {
-            state[i * 2] = BallsBody[i].Position.X;
-            state[i * 2 + 1] = BallsBody[i].Position.Y;
-        }
-
-        return state;
-    }
-
-    public void SetAction(float angle, float strength = 1500f) // angle -1 to 1
-    {
-        // rescale angle from (-1, 1) to (-pi, pi)
-        angle *= (float)Math.PI;
-
-        SetBallVelocity(0, new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * strength);
-    }
-
-    public float GetReward(int ballsFell, Ending ending)
-    {
-        if (ending == Ending.Loss) return -1f;
-        if (ending == Ending.Victory) return 20f + (ballsFell * 3);
-
-        return (ballsFell * 3) - 0.01f;
-
-        // multiplying by a value > 1 is NECESSARY because with a "-1" reward when loss and "0.99" when one ball falls,
-        // the AI learns to do nothing to stay safe
     }
 
     #endregion

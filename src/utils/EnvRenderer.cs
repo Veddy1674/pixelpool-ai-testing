@@ -97,76 +97,6 @@ static class EnvRenderer
         Raylib.CloseWindow();
     }
 
-    /* RenderVideo with IPoolEnv
-    public static void RenderVideo(IPoolEnv env, Action? preRendering = null, Action? postRendering = null, int fps = -1)
-    {
-        // init renderer, resizing is allowed but not meant
-        var flags = ConfigFlags.MaximizedWindow | ConfigFlags.ResizableWindow | ConfigFlags.AlwaysRunWindow;
-        if (fps == -1)
-            flags |= ConfigFlags.VSyncHint;
-        else
-            Raylib.SetTargetFPS(fps);
-
-        Raylib.SetConfigFlags(flags);
-        // vsync on but it doesn't matter, game logic isn't processed here!
-
-        Raylib.InitWindow(ScreenWidth, ScreenHeight, "Pixel Pool");
-        Raylib.MaximizeWindow();
-
-        #region draw init
-
-        var screenCenter = Raylib.GetScreenCenter();
-
-        // pool table
-        var poolTable = new Sprite(Utils.LoadTextureER("assets.pooltable1.png").WithSize(129, 64));
-
-        // balls
-        var balls = new Sprite[ballColors.Length];
-        var ballTexture = Utils.LoadTextureER("assets.ball.png").WithSize(4, 4); // shared texture (texture size is also shared)
-
-        for (int i = 0; i < balls.Length; i++)
-            balls[i] = new Sprite(ballTexture, color: ballColors[i]);
-
-        #endregion
-
-        #region draw loop
-
-        Utils.LoadFonts();
-
-        while (!Raylib.WindowShouldClose())
-        {
-            preRendering?.Invoke(); // usually input related
-
-            Raylib.BeginDrawing();
-
-            // background
-            Raylib.ClearBackground(backgroundColor);
-
-            // draw table
-            poolTable.DrawCentered(screenCenter);
-
-            if (ShowHitboxes)
-                Raylib.DrawRectangleLinesEx(IPoolEnv.poolTableCollision, 3f, Color.Lime); // draw table outline
-
-            DrawBalls(env, env.GetBallsPosition(), balls);
-
-            // draw holes hitbox
-            if (ShowHitboxes)
-            {
-                foreach (var (position, radius) in IPoolEnv.ballHoles)
-                    Raylib.DrawCircleLinesV(position, radius, Color.Yellow);
-            }
-
-            postRendering?.Invoke();
-
-            Raylib.EndDrawing();
-        }
-        #endregion
-
-        Raylib.CloseWindow();
-    }
-    */
-
     // render video without env
     // getBallsPositionAndActive is intended to be modified inside preRendering or postRendering (or async)
     public static void RenderVideo(ref BallState[] getBallsPositionAndActive, Action? preRendering = null, Action? postRendering = null, int fps = -1)
@@ -221,13 +151,11 @@ static class EnvRenderer
 
             #region Draw Balls
 
-            const float defaultBallRadius = 15f; // PoolEnv.ballRadius is private
-
             if (getBallsPositionAndActive[0].IsActive)
             {
                 balls[0].DrawCentered((Vector2)getBallsPositionAndActive[0].Position); // cue ball
                 if (ShowHitboxes)
-                    Raylib.DrawCircleLinesV((Vector2)getBallsPositionAndActive[0].Position, defaultBallRadius, Color.Orange);
+                    Raylib.DrawCircleLinesV((Vector2)getBallsPositionAndActive[0].Position, IPoolEnv.ballRadius, Color.Orange);
             }
 
             for (int i = 1; i < balls.Length; i++)
@@ -237,7 +165,7 @@ static class EnvRenderer
                 balls[i].DrawCentered((Vector2)getBallsPositionAndActive[i].Position);
 
                 if (ShowHitboxes)
-                    Raylib.DrawCircleLinesV((Vector2)getBallsPositionAndActive[i].Position, defaultBallRadius, Color.Red);
+                    Raylib.DrawCircleLinesV((Vector2)getBallsPositionAndActive[i].Position, IPoolEnv.ballRadius, Color.Red);
             }
 
             #endregion
@@ -256,6 +184,13 @@ static class EnvRenderer
         #endregion
 
         Raylib.CloseWindow();
+    }
+
+    // render a single frozen frame with no updates
+    public static void RenderFrame(BallState[] getBallsPositionAndActive)
+    {
+        var copy = getBallsPositionAndActive.ToArray();
+        RenderVideo(ref copy); // inline not allowed
     }
 
     private static void DrawBalls(IPoolEnv env, Vector2[] positions, Sprite[] balls)
