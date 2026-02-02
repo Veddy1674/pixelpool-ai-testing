@@ -49,7 +49,7 @@ static class ProgramCLI
                     break;
 
 #if true // debugging purposes
-                case "test":
+                case "testpy":
 
                     PythonUtils.SetupPython();
 
@@ -70,6 +70,22 @@ static class ProgramCLI
                     catch (Exception e)
                     {
                         Log("&cSomething went wrong: \n" + e.Message + "\n" + e.StackTrace);
+                    }
+
+                    break;
+
+                case "test":
+
+                    var env = new PoolEnvMini();
+
+                    for (int i = 0; i < 1_000; i++)
+                    {
+                        env.Reset();
+                        EnvSetup.OneBallShot_Reset(env);
+
+                        Algorithm.FindSingleWin(env);
+
+                        Log($"&q{i} &w- &qFound win.");
                     }
 
                     break;
