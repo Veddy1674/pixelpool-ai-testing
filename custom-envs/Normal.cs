@@ -34,4 +34,7 @@ static partial class EnvSetup
         // multiplying by a value > 1 is NECESSARY because with a "-1" reward when loss and "0.99" when one ball falls,
         // the AI learns to do nothing to stay safe
     }
+
+    public static bool Normal_IsDone(Ending ending)
+        => ending != Ending.Running;
 }

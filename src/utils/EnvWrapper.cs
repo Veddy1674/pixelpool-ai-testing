@@ -34,6 +34,14 @@
             return EnvSetup.Normal_GetReward(ballsFell, ending);
     }
 
+    public bool GetDoneCondition(Ending ending)
+    {
+        if (EnvType == 1)
+            return EnvSetup.OneBallShot_IsDone(); // always true
+        else
+            return EnvSetup.Normal_IsDone(ending);
+    }
+
     public void SetAction(float angle, float strength = 1500f)
         => env.SetAction(angle, strength);
 
@@ -46,7 +54,7 @@
         {
             State = GetState(),
             Reward = GetReward(ballsFell, ending),
-            Done = ending != Ending.Running,
+            Done = GetDoneCondition(ending),
             BallsFell = ballsFell,
             Ticks = ticks,
             Ending = ending

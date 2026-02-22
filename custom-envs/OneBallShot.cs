@@ -41,4 +41,7 @@ static partial class EnvSetup
 
     public static float OneBallShot_GetReward(Ending ending)
         => (ending == Ending.Victory) ? 1f : -1f;
+
+    public static bool OneBallShot_IsDone()
+        => true;
 }

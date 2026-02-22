@@ -87,14 +87,24 @@ static class PythonUtils
     {
         using (Py.GIL())
         {
-            // wrapper as global variable
-            MainScope.Set("env_wrapper", wrapper.ToPython());
+            // new module 'core'
+            dynamic sys = Py.Import("sys");
+            dynamic modules = sys.modules;
 
-            // printc to print to c# via ColorLog (for colors, print works fine but no colors)
-            MainScope.Set("printc", new Func<string, PyObject>(msg => {
-                ColorLog.Log(msg);
-                return PyObject.None;
-            }));
+            var coreModule = new PyModule("core");
+
+            // set globals ONLY to core.py:
+
+            // environment wrapper (used by env.py)
+            coreModule.SetAttr("env_wrapper", wrapper.ToPython());
+
+            // global to print via ColorLog.Log (with colors)
+            coreModule.SetAttr("printc", PyObject.FromManagedObject(
+                new Action<string>(msg => ColorLog.Log(msg))
+            ));
+
+            // add to system modules
+            modules["core"] = coreModule;
         }
     }
 }
