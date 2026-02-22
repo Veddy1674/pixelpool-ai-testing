@@ -59,19 +59,31 @@ static class PythonUtils
         }
     }
 
-    public static void RunCode(string pythonCode)
-    {
-        using (Py.GIL())
-            MainScope.Exec(pythonCode);
-    }
-
-    public static void RunFile(string filepath)
-        => RunCode(File.ReadAllText(filepath));
-
-    public static T? RunCode<T>(string pythonCode, string resultVar)
+    public static void RunCode(string pythonCode, params object[] args)
     {
         using (Py.GIL())
         {
+            // pass args as globals
+            for (int i = 0; i < args.Length; i++)
+                MainScope.Set($"arg{i}", args[i].ToPython());
+
+            MainScope.Exec(pythonCode);
+        }
+    }
+
+    public static void RunFile(string filepath, params object[] args)
+        => RunCode(File.ReadAllText(filepath), args);
+
+    // forgot why i made this, it looks mostly useless, why would python return a value to c#? they probably can communicate better via files
+    /*
+    public static T? RunCode<T>(string pythonCode, string resultVar, params object[] args)
+    {
+        using (Py.GIL())
+        {
+            // pass args as globals
+            for (int i = 0; i < args.Length; i++)
+                MainScope.Set($"arg{i}", args[i].ToPython());
+
             MainScope.Exec(pythonCode);
             dynamic result = MainScope.Get(resultVar);
 
@@ -81,6 +93,7 @@ static class PythonUtils
 
     public static T? RunFile<T>(string filepath, string resultVar)
         => RunCode<T>(File.ReadAllText(filepath), resultVar);
+    */
 
     // register globals to python
     public static void RegisterEnvWrapper(EnvWrapper wrapper)
