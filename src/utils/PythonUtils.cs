@@ -1,5 +1,4 @@
 ﻿using Python.Runtime;
-using System;
 using System.Diagnostics;
 
 static class PythonUtils
@@ -14,11 +13,17 @@ static class PythonUtils
 
         ColorLog.Log("&aInitializing python...");
 
+        // Note: Microsoft Store versions do not work because they cause permissions issues
+        // and 3.13 is the last supported version by Python.NET, therefore reccomended
+        string version = ConfigUtils.Read().python_version.Trim();
+        version = version != "" ? $"-{version} " : "";
+
+        // find DLL automatically
         var psi = new ProcessStartInfo
         {
-            FileName = "python",
+            FileName = "py",
             Arguments =
-                "-c \"import sys,os; p=os.path.join(sys.prefix,f'python{sys.version_info.major}{sys.version_info.minor}.dll'); print(p if os.path.exists(p) else '')\"",
+                version + "-c \"import sys,os; p=os.path.join(sys.prefix,f'python{sys.version_info.major}{sys.version_info.minor}.dll'); print(p if os.path.exists(p) else '')\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

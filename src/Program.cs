@@ -17,6 +17,8 @@ class Program
         Directory.CreateDirectory(Path_GreedyRollout);
         Directory.CreateDirectory(Path_Test);
 
+        ConfigUtils.CreateIfNotExists(); // saved/config.json
+
         if (args.Contains("--headless"))
         {
             bool noargs = ProgramCLI.Init(); // returns wheter to run the program normally
