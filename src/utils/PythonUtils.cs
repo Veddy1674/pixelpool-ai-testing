@@ -1,4 +1,5 @@
 ﻿using Python.Runtime;
+using System;
 using System.Diagnostics;
 
 static class PythonUtils
@@ -81,12 +82,19 @@ static class PythonUtils
     public static T? RunFile<T>(string filepath, string resultVar)
         => RunCode<T>(File.ReadAllText(filepath), resultVar);
 
+    // register globals to python
     public static void RegisterEnvWrapper(EnvWrapper wrapper)
     {
         using (Py.GIL())
         {
             // wrapper as global variable
             MainScope.Set("env_wrapper", wrapper.ToPython());
+
+            // printc to print to c# via ColorLog (for colors, print works fine but no colors)
+            MainScope.Set("printc", new Func<string, PyObject>(msg => {
+                ColorLog.Log(msg);
+                return PyObject.None;
+            }));
         }
     }
 }
