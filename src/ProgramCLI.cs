@@ -2,7 +2,6 @@
 using System.Numerics;
 using static ColorLog;
 using static EnvUtils;
-using static System.Net.Mime.MediaTypeNames;
 
 static class ProgramCLI
 {
@@ -51,19 +50,19 @@ static class ProgramCLI
 #if true // debugging purposes
                 case "testpy":
 
-                    PythonUtils.SetupPython();
+                    PythonUtils.SetupPython(); // init if not already
 
-                    const string script = "test.py";
+                    const string scriptName = "test.py";
 
-                    Log($"&aRunning &s'{script}'&a:\n");
-                    
+                    Log($"&aRunning &s'{scriptName}'&a:\n");
+
                     try
                     {
                         // wrapping
                         PythonUtils.RegisterEnvWrapper(new EnvWrapper());
 
                         // running
-                        PythonUtils.RunFile($"python/{script}");
+                        PythonUtils.RunFile($"python/{scriptName}");
 
                         Log("\n&qScript executed successfully.");
                     }
@@ -92,28 +91,11 @@ static class ProgramCLI
 #endif
 
                 case "playback":
-                    // load from file
-                    string binPath = args.GetOrDefault(1);
-                    if (binPath.EndsWith(".bin"))
-                    {
-                        var content = ReadBinary(binPath);
-                        if (content is null)
-                        {
-                            Log($"&cFailed to load content from '{binPath}'! (Perhaps file corrupted or not found)");
-                            break;
-                        }
+                    HandlePlayback(args);
+                    break;
 
-                        PlaybackDirections = content.Value.vectors;
-                        PlayBackMode = content.Value.mode;
-
-                        Log($"&aLoading a video (mode: {PlayBackMode}) from '{binPath}'...");
-                    }
-
-                    // load from latest
-                    if (PlaybackDirections.Length == 0)
-                        Log("&cNo actions found to playback!");
-                    else
-                        Playback(PlayBackMode, PlaybackDirections);
+                case "py": // run a python script
+                    HandlePyScript(args);
                     break;
 
                 #region Special cases (such as "help", "exit")
@@ -122,7 +104,19 @@ static class ProgramCLI
                     return true;
 
                 case "help":
-                    Log("Available commands: help, clear, exit");
+                    Log("Available commands:\n");
+
+                    Log("&sbenchmark &d[mode] --steps (int) --threads (int) &a- Run a benchmark");
+                    Log("&salgorithm|algo &d[mode] <algorithm> --samples (int) &a- Run an algorithm"); // TODO: add --threads when implemented
+                    Log("&splayback &d[binary file] &a- Run a 'video' of recorded directions, if no args, uses the last saved video");
+                    Log("&spy &d[script name] [args] &a- Run a python script in the 'python' folder");
+                    Log("&snoargs &a- Run a normal game instance (as if PixelPool.exe was executed normally)");
+                    Log("&shelp &a- Show this help message");/*, specific commands info can be found in COMMANDS.md");*/
+                    Log("&scls &a- Clear this console");
+                    Log("&sexit &a- Exit this program");
+
+                    Log("\nNotes: arguments around '<>' are mandatory, around '[]' and '--' are optional.");
+                    Log("'[mode'] can be either '--normal' or '--optimized' (by default: normal).");
                     break;
 
                 case "cls":
@@ -262,6 +256,67 @@ static class ProgramCLI
 
             // save in binary
             SaveAsBinary_Incremental($"{Program.Path_GreedyRollout}results.bin", PlayBackMode, PlaybackDirections);
+        }
+    }
+
+    static void HandlePlayback(string[] args)
+    {
+        // load from file
+        string binPath = args.GetOrDefault(1);
+        if (binPath.EndsWith(".bin"))
+        {
+            var content = ReadBinary(binPath);
+            if (content is null)
+            {
+                Log($"&cFailed to load content from '{binPath}'! (Perhaps file corrupted or not found)");
+                return;
+            }
+
+            PlaybackDirections = content.Value.vectors;
+            PlayBackMode = content.Value.mode;
+
+            Log($"&aLoading a video (mode: {PlayBackMode}) from '{binPath}'...");
+        }
+
+        // load from latest
+        if (PlaybackDirections.Length == 0)
+            Log("&cNo actions found to playback!");
+        else
+            Playback(PlayBackMode, PlaybackDirections);
+    }
+
+    static void HandlePyScript(string[] args)
+    {
+        string script = args.GetOrDefault(1);
+
+        if (string.IsNullOrEmpty(script))
+        {
+            Log("&cInvalid or missing script name!");
+            return;
+        }
+        else if (!File.Exists($"python/{script}"))
+        {
+            Log($"&cScript '{script}' not found!");
+            return;
+        }
+
+        PythonUtils.SetupPython(); // init if not already
+
+        Log($"&aRunning &s'{script}'&a:\n");
+
+        try
+        {
+            // wrapping
+            PythonUtils.RegisterEnvWrapper(new EnvWrapper());
+
+            // running
+            PythonUtils.RunFile($"python/{script}", [.. args.Skip(2)]);
+
+            Log("\n&qScript executed successfully.");
+        }
+        catch (Exception e)
+        {
+            Log("&cSomething went wrong: \n" + e.Message + "\n" + e.StackTrace);
         }
     }
 
