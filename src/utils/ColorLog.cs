@@ -33,6 +33,41 @@
         // and then it's just about using the key nearby to get a darker tone...
     };
 
+    /// <summary>
+    /// Print a message with color codes to the C# console.
+    /// <para>Defined colors:</para>
+    /// 
+    /// <para>
+    /// &amp;0 - Gray <i>(default)</i><br/>
+    /// &amp;1 - DarkGray<br/>
+    /// &amp;2 - White<br/>
+    /// &amp;3 - Black <i>(invisible on black background!)</i>
+    /// </para>
+    /// 
+    /// <para><b>Greens:</b><br/>
+    /// &amp;q - Green<br/>
+    /// &amp;w - DarkGreen
+    /// </para>
+    /// 
+    /// <para><b>Cyans/Blues:</b><br/>
+    /// &amp;a - Cyan<br/>
+    /// &amp;s - DarkCyan<br/>
+    /// &amp;d - Blue<br/>
+    /// &amp;f - DarkBlue
+    /// </para>
+    /// 
+    /// <para><b>Reds/Magentas:</b><br/>
+    /// &amp;z - Magenta<br/>
+    /// &amp;x - DarkMagenta<br/>
+    /// &amp;c - Red<br/>
+    /// &amp;v - DarkRed
+    /// </para>
+    /// 
+    /// <para><b>Yellows:</b><br/>
+    /// &amp;t - Yellow<br/>
+    /// &amp;y - DarkYellow
+    /// </para>
+    /// </summary>
     public static void Log(string text, bool newLine = true)
     {
         // no check for "if text doesn't contain & then skip" because regardless, .Contains() cycles through the characters anyway
