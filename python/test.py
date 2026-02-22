@@ -1,13 +1,19 @@
-import numpy as np
+from core import printc
 from env import PoolEnv
 
-if 'env_wrapper' not in globals():
-    raise ImportError("env_wrapper is not defined")
+env = PoolEnv(envType=1) # 4 inputs
+env.reset()
 
-env = PoolEnv(globals()['env_wrapper'], envType=1) # 4 inputs
+action = env.action_space.sample()
+obs, reward, done, truncated, info = env.step(action)
 
-print(env.reset())
-# obs, reward, done, truncated, info = env.step([0])
-
-# print(obs)
-# print(reward, done, truncated, info)
+printc(f"&dAction: {action}")
+printc(f"&dState: {[f'{x:.3f}' for x in obs]}") # format each number to 3 decimals
+printc(f"&dReward: {reward}")
+printc(f"&cDone: {done}")
+printc(f"&cTruncated: {truncated}")
+printc(f"&dInfo: {info}")
+printc(f"\nArguments passed:")
+printc(f"Arg0: {globals()['arg0'] if 'arg0' in globals() else 'null'}")
+printc(f"Arg1: {globals()['arg1'] if 'arg1' in globals() else 'null'}")
+printc(f"Arg2: {globals()['arg2'] if 'arg2' in globals() else 'null'}")
