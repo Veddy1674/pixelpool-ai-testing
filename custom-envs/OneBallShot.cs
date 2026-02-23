@@ -33,10 +33,20 @@ static partial class EnvSetup
 
     public static float[] OneBallShot_GetState(in PoolEnvMini env)
         => [
-            env.BallsBody[0].Position.X,
-            env.BallsBody[0].Position.Y,
-            env.BallsBody[1].Position.X - env.BallsBody[0].Position.X,
-            env.BallsBody[1].Position.Y - env.BallsBody[0].Position.Y
+            // minX = minX = 484 + 28 + 0 * (952 - 56) = 512
+            // maxX = 484 + 28 + 0.999 * (952 - 56) ≈ 512 + 896 * 0.999 = 512 + 895.1 = ~1408
+
+            // minY = 289 + 28 + 0 * (430 - 56) = 317
+            // maxY = 289 + 28 + 0.999 * (430 - 56) ≈ 317 + 374 * 0.999 = 317 + 373.6 = ~691
+
+            // min dist X and Y = minDistance from reset, so 100f default
+            // max dist X = 1407.1 - 512 = ~895.1
+            // max dist Y = 690.6 - 317 = ~373.6
+
+            env.BallsBody[0].Position.X / 1440f,
+            env.BallsBody[0].Position.Y / 700f,
+            (env.BallsBody[1].Position.X - env.BallsBody[0].Position.X) / 910f,
+            (env.BallsBody[1].Position.Y - env.BallsBody[0].Position.Y) / 390f
         ];
 
     public static float OneBallShot_GetReward(Ending ending)
